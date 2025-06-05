@@ -77,7 +77,7 @@ inline LRESULT CALLBACK ColorPickerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
 
         EndPaint(hwnd, &ps);
         return 0;
-    }ascasc
+    }
 
     case WM_LBUTTONDOWN:
     {
