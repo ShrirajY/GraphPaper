@@ -157,6 +157,41 @@ void drawCircle(HDC hdc, float centerX, float centerY, float radius, COLORREF co
     DeleteObject(hPen);
 }
 
+void DrawEllipse(HDC hdc, float centerX, float centerY, float a, float b, float angle, COLORREF color)
+{
+    HPEN hPen = CreatePen(PS_SOLID, 2, color); // red border
+    HGDIOBJ oldPen = SelectObject(hdc, hPen);
+
+    HGDIOBJ oldBrush = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH)); // No fill
+
+    POINT pts[360];
+    float rad = angle * 3.14159265f / 180.0f; // Convert to radians
+    centerX = centerX * 25;
+    centerY = centerY * 25;
+    a = a * 25;
+    b = b * 25;
+
+    for (int i = 0; i < 360; i++)
+    {
+        float theta = i * 2.0f * 3.14159265f / 360;
+
+        float x = a * cosf(theta);
+        float y = b * sinf(theta);
+
+        float xr = x * cosf(rad) - y * sinf(rad);
+        float yr = x * sinf(rad) + y * cosf(rad);
+
+        pts[i].x = static_cast<LONG>(centerX + xr);
+        pts[i].y = static_cast<LONG>(centerY + yr);
+    }
+
+    Polyline(hdc, pts, 360);
+
+    SelectObject(hdc, oldBrush);
+    SelectObject(hdc, oldPen);
+    DeleteObject(hPen);
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                    LPSTR lpCmdLine, int nCmdShow)
 {
@@ -249,6 +284,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             drawCircle(hdc, temp->centerX, temp->centerY, temp->radius, temp->color);
         }
+
+        DrawEllipse(hdc, 0, 0, 4, 2, 30.0f, currColor);
         EndPaint(hwnd, &ps);
         return 0;
     }
