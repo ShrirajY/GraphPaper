@@ -12,6 +12,7 @@ COLORREF currColor = RGB(255, 0, 0);
 
 
 HWND hRadioBtn1, hRadioBtn2;
+HWND hColorPicker;
 
 int DGBwidth = 250;
 int DGBHeight = 150;
@@ -27,4 +28,5 @@ int LineDBBHeight = DGBHeight * 2;
 
 COLORREF oldColor;
 int HighlightFlag = 0;
+
 #define WM_MSG_DB 11

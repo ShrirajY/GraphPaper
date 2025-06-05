@@ -1,59 +1,53 @@
+#ifndef COLOR_PICKER_WINDOW_H
+#define COLOR_PICKER_WINDOW_H
+
 #include <windows.h>
 #include <cmath>
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#include "Globals.h"
+LRESULT CALLBACK ColorPickerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                   LPSTR lpCmdLine, int nCmdShow)
+// Function to create the window
+inline HWND CreateColorPickerWindow(HINSTANCE hInstance, int nCmdShow, HWND hParent)
 {
     const char CLASS_NAME[] = "BasicWin32Window";
 
     WNDCLASS wc = {0};
-    wc.lpfnWndProc = WindowProc;
+    wc.lpfnWndProc = ColorPickerWndProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
     wc.hbrBackground = (HBRUSH)(GRAY_BRUSH);
 
     RegisterClass(&wc);
 
-    HWND hwnd = CreateWindowEx(
-        0,                    // Optional window styles
-        CLASS_NAME,           // Window class
-        "Basic Win32 Window", // Window text
-        WS_OVERLAPPEDWINDOW,  // Window style
-
-        // Position and size
+    hColorPicker = CreateWindowEx(
+        0,
+        CLASS_NAME,
+        "Basic Win32 Window",
+        WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 400, 300,
+        hParent,
+        NULL,
+        hInstance,
+        NULL);
 
-        NULL,      // Parent window
-        NULL,      // Menu
-        hInstance, // Instance handle
-        NULL       // Additional application data
-    );
-
-    if (hwnd == NULL)
-        return 0;
-
-    ShowWindow(hwnd, nCmdShow);
-    UpdateWindow(hwnd);
-
-    // Run the message loop
-    MSG msg = {0};
-    while (GetMessage(&msg, NULL, 0, 0))
+    if (hColorPicker != NULL)
     {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        ShowWindow(hColorPicker, nCmdShow);
+        UpdateWindow(hColorPicker);
+        SetWindowPos(hColorPicker, HWND_TOPMOST, 0, 0, 0, 0,
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
     }
 
-    return (int)msg.wParam;
+    return hColorPicker;
 }
 
 // Window procedure
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+inline LRESULT CALLBACK ColorPickerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
     case WM_DESTROY:
-        PostQuitMessage(0);
+        DestroyWindow(hColorPicker);
         return 0;
 
     case WM_PAINT:
@@ -73,7 +67,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 BYTE red = (BYTE)(x * 255 / (boxWidth - 1));
                 BYTE green = (BYTE)(y * 255 / (boxHeight - 1));
 
-                // Smooth blue channel as sine wave horizontally
                 double blueF = (sin((double)x / boxWidth * 3.14159 * 2) + 1) / 2;
                 BYTE blue = (BYTE)(blueF * 255);
 
@@ -83,8 +76,23 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
 
         EndPaint(hwnd, &ps);
-    }
         return 0;
     }
+
+    case WM_LBUTTONDOWN:
+    {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+
+        HDC hdc = GetDC(hwnd);
+        currColor = GetPixel(hdc, x, y);
+        ReleaseDC(hwnd, hdc);
+        DestroyWindow(hColorPicker);
+        return 0;
+    }
+    }
+
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
+
+#endif // COLOR_PICKER_WINDOW_H

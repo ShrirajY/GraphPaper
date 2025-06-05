@@ -10,6 +10,7 @@
 #include "DrawLine.h"
 #include "Globals.h"
 #include "CircleDB.h"
+#include "ColorPicker.h"
 int LineDrawFlag = 0;
 
 struct Point3D
@@ -229,15 +230,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         //     DrawPoint(hdc, i, -i, RGB(255, 0, 0), 7);
         // }
 
-        DrawLine(hdc, -4, 4, 8, 8, RGB(0, 255, 0));
-        // DrawLine(hdc, -8, 8, -8, -8, currColor);
-        // DrawLine(hdc, 8, -8, -8, -8, currColor);
-        // DrawLine(hdc, 8, -8, 8, 8, currColor);
-        DrawAllLines(hdc);
-        drawRectangle(hdc, -8, 8, 8, -8, currColor);
+        // DrawLine(hdc, -4, 4, 8, 8, RGB(0, 255, 0));
+        // // DrawLine(hdc, -8, 8, -8, -8, currColor);
+        // // DrawLine(hdc, 8, -8, -8, -8, currColor);
+        // // DrawLine(hdc, 8, -8, 8, 8, currColor);
+        // DrawAllLines(hdc);
+        // drawRectangle(hdc, -8, 8, 8, -8, currColor);
 
-        drawCircle(hdc, 0, 4, 2, RGB(0, 0, 255));
-        drawCircle(hdc, 4, 0, 2, currColor);
+        // drawCircle(hdc, 0, 4, 2, RGB(0, 0, 255));
+        // drawCircle(hdc, 4, 0, 2, currColor);
 
         for (LineInfo *temp : LinesList)
         {
@@ -377,7 +378,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         if (wParam == 'C')
         {
-            CreateChildWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), hwnd);
+            hColorPicker = CreateColorPickerWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), 2, hMain);
+            SetWindowPos(hColorPicker, HWND_TOPMOST, 0, 0, 0, 0,
+             SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         }
         if (wParam == 'Z')
         {

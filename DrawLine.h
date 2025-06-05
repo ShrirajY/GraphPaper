@@ -3,7 +3,7 @@
 #include "Globals.h"
 #include "LineDB.h"
 #include "CircleDB.h"
-
+#include "ColorPicker.h"
 
 WNDPROC OldDGBProc;
 WNDPROC OldDGBProcCircle;
@@ -22,6 +22,10 @@ LRESULT CALLBACK DGBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             SendMessage(hLineDBGB, WM_MSG_DB, 0, 0);
             InvalidateRect(hMain, NULL, TRUE);
         }
+        else if (LOWORD(wParam) == 1)
+        {
+            CreateColorPickerWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), 0, hDGB);
+        }
         break;
 
     default:
@@ -39,9 +43,11 @@ LRESULT CALLBACK DGBProcCircle(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             CircleInfo *temp = CollectCircle(hDGBCircle);
             temp->color = currColor;
             AddCircle(temp);
-            MessageBox(hDGBCircle, "Collected", "", MB_OK);
-            // SendMessage(hLineDBGB, WM_MSG_DB, 0, 0);
             InvalidateRect(hMain, NULL, TRUE);
+        }
+        else if (LOWORD(wParam) == 1)
+        {
+            CreateColorPickerWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), 0, hDGBCircle);
         }
         break;
 
@@ -63,7 +69,11 @@ void DrawGroupBoxLine(HWND hwnd, HINSTANCE hInstance)
     OldDGBProc = (WNDPROC)SetWindowLongPtr(hDGB, GWLP_WNDPROC, (LONG_PTR)DGBProc);
     // Size and positioning
     int boxW = 80, boxH = 20, pad = 30;
-    int x = 30, y = 30;
+    int x = 30, y = 40;
+
+    CreateWindowEx(0, "BUTTON", "Color Picker_", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                   x + 130, y - 30, 90, boxH,
+                   hDGB, (HMENU)(1), GetModuleHandle(NULL), NULL);
 
     // --- Row 1 ---
     CreateWindowEx(0, "STATIC", "X1:", WS_CHILD | WS_VISIBLE,
@@ -114,7 +124,7 @@ LineInfo *CollectLine(HWND hwndGroupBox)
     GetWindowText(hEdit, buffer, sizeof(buffer));
     int y2 = atoi(buffer);
 
-    for(int i=1; i <= 4; i++)
+    for (int i = 1; i <= 4; i++)
     {
         SetWindowText(GetDlgItem(hwndGroupBox, DGBIndexes + i), "");
     }
@@ -130,7 +140,7 @@ CircleInfo *CollectCircle(HWND hwndGroupBox)
     HWND hEdit = GetDlgItem(hwndGroupBox, DGBIndexes + 7);
     GetWindowText(hEdit, buffer, sizeof(buffer));
     float x1 = atoi(buffer);
-    
+
     hEdit = GetDlgItem(hwndGroupBox, DGBIndexes + 8);
     GetWindowText(hEdit, buffer, sizeof(buffer));
     float y1 = atof(buffer);
@@ -139,8 +149,7 @@ CircleInfo *CollectCircle(HWND hwndGroupBox)
     GetWindowText(hEdit, buffer, sizeof(buffer));
     float radius = atof(buffer);
 
-
-    for(int i=1; i <= 4; i++)
+    for (int i = 1; i <= 4; i++)
     {
         SetWindowText(GetDlgItem(hwndGroupBox, DGBIndexes + i), "");
     }
@@ -148,7 +157,6 @@ CircleInfo *CollectCircle(HWND hwndGroupBox)
 
     return circle;
 }
-
 
 void DrawGroupBoxCircle(HWND hwnd, HINSTANCE hInstance)
 {
@@ -179,7 +187,7 @@ void DrawGroupBoxCircle(HWND hwnd, HINSTANCE hInstance)
     CreateWindowEx(0, "STATIC", "Radius:", WS_CHILD | WS_VISIBLE,
                    x - 20, y + boxH + pad + 3 + boxH + pad + 3, 60, boxH, hDGBCircle, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x + 50,  y + boxH + pad + 3 + boxH + pad + 3, boxW, boxH, hDGBCircle, (HMENU)(DGBIndexes + 9), hInstance, NULL);
+                   x + 50, y + boxH + pad + 3 + boxH + pad + 3, boxW, boxH, hDGBCircle, (HMENU)(DGBIndexes + 9), hInstance, NULL);
 
     // CreateWindowEx(0, "STATIC", "Y2:", WS_CHILD | WS_VISIBLE,
     //                x + boxW + pad - 20, y + boxH + pad + 3, 17, boxH, hDGB, NULL, hInstance, NULL);
@@ -190,4 +198,8 @@ void DrawGroupBoxCircle(HWND hwnd, HINSTANCE hInstance)
     CreateWindowEx(0, "BUTTON", "Submit", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
                    x, y + 3 * (boxH + pad) + 9, boxW * 2 + pad, boxH,
                    hDGBCircle, (HMENU)(DGBIndexes + 10), GetModuleHandle(NULL), NULL);
+
+    CreateWindowEx(0, "BUTTON", "Color Picker_", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                   x + 130, y - 20, 90, boxH,
+                   hDGBCircle, (HMENU)(1), GetModuleHandle(NULL), NULL);
 }
