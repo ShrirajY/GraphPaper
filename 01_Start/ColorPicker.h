@@ -78,7 +78,7 @@ inline LRESULT CALLBACK ColorPickerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, 
         EndPaint(hwnd, &ps);
         return 0;
     }
-    // making changes
+    // Changes made in ColorPicker
     case WM_LBUTTONDOWN:
     {
         int x = LOWORD(lParam);
