@@ -43,6 +43,7 @@ LRESULT CALLBACK DGBProcCircle(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
             CircleInfo *temp = CollectCircle(hDGBCircle);
             temp->color = currColor;
             AddCircle(temp);
+            SendMessage(hCircleDBGB, WM_MSG_DB, 0, 0);
             InvalidateRect(hMain, NULL, TRUE);
         }
         else if (LOWORD(wParam) == 1)

@@ -11,6 +11,7 @@
 #include "Globals.h"
 #include "CircleDB.h"
 #include "ColorPicker.h"
+#include "DrawEllipse.h"
 int LineDrawFlag = 0;
 
 struct Point3D
@@ -284,7 +285,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             drawCircle(hdc, temp->centerX, temp->centerY, temp->radius, temp->color);
         }
-
+        for (EllipseInfo *temp : EllipseList)
+        {
+            DrawEllipse(hdc, temp->centerX, temp->centerY, temp->a, temp->b, temp->angle, temp->color);
+        }
         DrawEllipse(hdc, 0, 0, 4, 2, 30.0f, currColor);
         EndPaint(hwnd, &ps);
         return 0;
@@ -301,17 +305,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                                   WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
                                   DGroupBoxLeft + 130, DGroupBoxTop - 30, 120, 30, hwnd, (HMENU)1002,
                                   (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
-
-        CheckRadioButton(hwnd, 1001, 1002, 1001);
+        hRadioBtn3 = CreateWindow("BUTTON", "Ellipse",
+                                  WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+                                    DGroupBoxLeft + 260, DGroupBoxTop - 30, 120, 30, hwnd, (HMENU)1003,
+                                    (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+        CheckRadioButton(hwnd, 1001, 1003, 1003);
         AddLine(calcDataLine(2, 2, 4, 4, RGB(255, 0, 0)));
         showGroupBox(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
         DrawGroupBoxLine(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
         DrawGroupBoxCircle(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+        DrawGroupBoxEllipse(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+        hRadioBtn1DBLine = CreateWindow("BUTTON", "Lines",
+                                       WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+                                       LineDBBLeft, LineDBBTop - 30, 120, 30, hwnd, (HMENU)1010,
+                                       (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+        hRadioBtn2DBCircle = CreateWindow("BUTTON", "Circle",
+                                       WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
+                                        LineDBBLeft + 130, LineDBBTop - 30, 120, 30, hwnd, (HMENU)1011,
+                                        (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+        CheckRadioButton(hwnd, 1010, 1011, 1010);
         ShowLineDB(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+        ShowCircleDB(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
         hMain = hwnd;
-        SetTimer(hwnd, 1, 1000, NULL);
+        // SetTimer(hwnd, 1, 1000, NULL);
         ShowWindow(hDGBCircle, SW_HIDE);
-        ShowWindow(hDGB, SW_SHOW);
+        ShowWindow(hDGB, SW_HIDE);
+        ShowWindow(hDGBEllipse, SW_SHOW);
+        ShowWindow(hLineDBGB, SW_SHOW);
+        ShowWindow(hCircleDBGB, SW_HIDE);
         return 0;
     }
 
@@ -488,13 +509,38 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             ShowWindow(hDGB, SW_SHOW);
             ShowWindow(hDGBCircle, SW_HIDE);
+            ShowWindow(hDGBEllipse, SW_HIDE);
         }
         else if (LOWORD(wParam) == 1002) // btn2 clicked
         {
             ShowWindow(hDGB, SW_HIDE);
+            ShowWindow(hDGBEllipse, SW_HIDE);
             ShowWindow(hDGBCircle, SW_SHOW);
         }
-
+        else if (LOWORD(wParam) == 1003) // btn3 clicked
+        {
+            ShowWindow(hDGB, SW_HIDE);
+            ShowWindow(hDGBCircle, SW_HIDE);
+            ShowWindow(hDGBEllipse, SW_SHOW);
+        }
+        else if (LOWORD(wParam) == 1004) // Color picker button clicked
+        {
+            hColorPicker = CreateColorPickerWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), 0, hMain);
+            SetWindowPos(hColorPicker, HWND_TOPMOST, 0, 0, 0, 0,
+             SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        }
+        else if (LOWORD(wParam) == 1010) // Line DB button clicked
+        {
+            ShowWindow(hLineDBGB, SW_SHOW);
+            ShowWindow(hCircleDBGB, SW_HIDE);
+            CheckRadioButton(hwnd, 1010, 1011, 1010);
+        }
+        else if (LOWORD(wParam) == 1004) // Circle DB button clicked
+        {
+            ShowWindow(hLineDBGB, SW_HIDE);
+            ShowWindow(hCircleDBGB, SW_SHOW);
+            CheckRadioButton(hwnd, 1011, 1010, 1011);
+        }
         break;
     }
     case WM_DESTROY:

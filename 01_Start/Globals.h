@@ -3,15 +3,22 @@
 
 HWND hDGB = NULL;
 HWND hDGBCircle = NULL;
+HWND hDGBEllipse = NULL;
 HWND hMain = NULL;
 HWND hLineDBGB = NULL;
+HWND hCircleDBGB = NULL;
+HWND hEllipseDBGB = NULL;
 const int DGBIndexes = 100;
 const int DBGBIndexesPreview = 300;
 const int DBGBIndexesInfo = 400;
+
+const int DGBIndexesCirclePreview = 500;
+const int DBGBIndexesCircleInfo = 600;
 COLORREF currColor = RGB(255, 0, 0);
 
 
-HWND hRadioBtn1, hRadioBtn2;
+HWND hRadioBtn1, hRadioBtn2, hRadioBtn3;
+HWND hRadioBtn1DBLine, hRadioBtn2DBCircle;
 HWND hColorPicker;
 
 int DGBwidth = 250;
