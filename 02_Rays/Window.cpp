@@ -1,46 +1,124 @@
 #include <windows.h>
-#include <cmath>
-#include <ctime>
+#include <algorithm>
+enum ShapeType { SHAPE_LINE, SHAPE_ELLIPSE, SHAPE_CIRCLE };
+ShapeType currentShape = SHAPE_LINE;
 
-#define PI 3.14159265
+bool isDrawing = false;
+POINT startPoint = {0}, prevPoint = {0};
 
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-
-// Color generator
-COLORREF GetRainbowColor(int index, int total)
+void DrawShape(HDC hdc, ShapeType shape, POINT start, POINT end)
 {
-    float ratio = static_cast<float>(index) / total;
-    int r = static_cast<int>(127.5 * (1 + sin(2 * PI * ratio)));
-    int g = static_cast<int>(127.5 * (1 + sin(2 * PI * ratio + 2 * PI / 3)));
-    int b = static_cast<int>(127.5 * (1 + sin(2 * PI * ratio + 4 * PI / 3)));
-    return RGB(r, g, b);
+    switch (shape)
+    {
+        case SHAPE_LINE:
+            MoveToEx(hdc, start.x, start.y, NULL);
+            LineTo(hdc, end.x, end.y);
+            break;
+
+        case SHAPE_ELLIPSE:
+            Ellipse(hdc, start.x, start.y, end.x, end.y);
+            break;
+
+        case SHAPE_CIRCLE: {
+            int dx = end.x - start.x;
+            int dy = end.y - start.y;
+            int r = std::min(abs(dx), abs(dy));
+            int left = start.x;
+            int top = start.y;
+            int right = start.x + (dx < 0 ? -r : r);
+            int bottom = start.y + (dy < 0 ? -r : r);
+            Ellipse(hdc, left, top, right, bottom);
+            break;
+        }
+    }
+}
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+    {
+        case WM_CREATE:
+            CreateWindow("BUTTON", "Line", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                         10, 10, 60, 30, hwnd, (HMENU)1, NULL, NULL);
+            CreateWindow("BUTTON", "Ellipse", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                         80, 10, 60, 30, hwnd, (HMENU)2, NULL, NULL);
+            CreateWindow("BUTTON", "Circle", WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON,
+                         150, 10, 60, 30, hwnd, (HMENU)3, NULL, NULL);
+            break;
+
+        case WM_COMMAND:
+            switch (LOWORD(wParam))
+            {
+                case 1: currentShape = SHAPE_LINE; break;
+                case 2: currentShape = SHAPE_ELLIPSE; break;
+                case 3: currentShape = SHAPE_CIRCLE; break;
+            }
+            break;
+
+        case WM_LBUTTONDOWN:
+            isDrawing = true;
+            startPoint.x = LOWORD(lParam);
+            startPoint.y = HIWORD(lParam);
+            prevPoint = startPoint;
+            SetCapture(hwnd);
+            break;
+
+        case WM_MOUSEMOVE:
+            if (isDrawing)
+            {
+                HDC hdc = GetDC(hwnd);
+                SetROP2(hdc, R2_NOTXORPEN); // Invert drawing for rubber-banding
+
+                // Erase previous
+                DrawShape(hdc, currentShape, startPoint, prevPoint);
+
+                // Draw new
+                prevPoint.x = LOWORD(lParam);
+                prevPoint.y = HIWORD(lParam);
+                DrawShape(hdc, currentShape, startPoint, prevPoint);
+
+                ReleaseDC(hwnd, hdc);
+            }
+            break;
+
+        case WM_LBUTTONUP:
+            if (isDrawing)
+            {
+                isDrawing = false;
+                ReleaseCapture();
+                HDC hdc = GetDC(hwnd);
+                SetROP2(hdc, R2_COPYPEN); // Normal drawing mode
+                DrawShape(hdc, currentShape, startPoint, prevPoint);
+                ReleaseDC(hwnd, hdc);
+            }
+            break;
+
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            break;
+
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 0;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
 {
-    const char CLASS_NAME[] = "ModularCircle";
+    const char CLASS_NAME[] = "ShapeWindow";
 
-    WNDCLASS wc = {};
+    WNDCLASS wc = { };
     wc.lpfnWndProc = WndProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = CLASS_NAME;
-    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 
     RegisterClass(&wc);
 
-    HWND hwnd = CreateWindowEx(
-        0,
-        CLASS_NAME,
-        "Modular Times Table Circle",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 900, 900,
-        NULL, NULL, hInstance, NULL
-    );
-
-    if (!hwnd) return 0;
+    HWND hwnd = CreateWindowEx(0, CLASS_NAME, "Shape Drawer",
+                               WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 500, 400,
+                               NULL, NULL, hInstance, NULL);
 
     ShowWindow(hwnd, nCmdShow);
-    UpdateWindow(hwnd);
 
     MSG msg = {};
     while (GetMessage(&msg, NULL, 0, 0))
@@ -50,77 +128,4 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow)
     }
 
     return 0;
-}
-
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    static int multiplier = 2;
-    static const int totalPoints = 100;
-    static const int radius = 350;
-    static const int centerX = 450;
-    static const int centerY = 450;
-
-    switch (msg)
-    {
-    case WM_PAINT:
-    {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd, &ps);
-
-        // Antialiasing
-        SetBkMode(hdc, TRANSPARENT);
-
-        // Draw background
-        FillRect(hdc, &ps.rcPaint, (HBRUSH)GetStockObject(BLACK_BRUSH));
-
-        // Draw points
-        POINT points[totalPoints];
-        for (int i = 0; i < totalPoints; ++i)
-        {
-            float angle = 2 * PI * i / totalPoints;
-            points[i].x = static_cast<LONG>(centerX + radius * cos(angle));
-            points[i].y = static_cast<LONG>(centerY + radius * sin(angle));
-
-            // Draw cyan dots
-            HBRUSH dotBrush = CreateSolidBrush(RGB(0, 255, 255));
-            HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, dotBrush);
-            Ellipse(hdc, points[i].x - 4, points[i].y - 4, points[i].x + 4, points[i].y + 4);
-            SelectObject(hdc, oldBrush);
-            DeleteObject(dotBrush);
-        }
-
-        // Draw modular lines
-        for (int i = 0; i < totalPoints; ++i)
-        {
-            int j = (i * multiplier) % totalPoints;
-            HPEN pen = CreatePen(PS_SOLID, 1, GetRainbowColor(i, totalPoints));
-            HPEN oldPen = (HPEN)SelectObject(hdc, pen);
-            MoveToEx(hdc, points[i].x, points[i].y, NULL);
-            LineTo(hdc, points[j].x, points[j].y);
-            SelectObject(hdc, oldPen);
-            DeleteObject(pen);
-        }
-
-        EndPaint(hwnd, &ps);
-        return 0;
-    }
-
-    case WM_KEYDOWN:
-        if (wParam == VK_UP)
-        {
-            multiplier++;
-            InvalidateRect(hwnd, NULL, TRUE);
-        }
-        else if (wParam == VK_DOWN)
-        {
-            if (multiplier > 1) multiplier--;
-            InvalidateRect(hwnd, NULL, TRUE);
-        }
-        return 0;
-
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        return 0;
-    }
-    return DefWindowProc(hwnd, msg, wParam, lParam);
 }
