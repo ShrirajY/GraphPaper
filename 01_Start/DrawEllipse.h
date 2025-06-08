@@ -32,8 +32,6 @@ LRESULT CALLBACK DGBProcEllipse(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
-
-
 EllipseInfo *CollectEllipse(HWND hwndGroupBox)
 {
     char buffer[16];
@@ -63,7 +61,7 @@ EllipseInfo *CollectEllipse(HWND hwndGroupBox)
     {
         SetWindowText(GetDlgItem(hwndGroupBox, DGBIndexes + i), "");
     }
-    
+
     EllipseInfo *ellipse = calcDataEllipse(x1, y1, a, b, angle, RGB(0, 0, 0));
 
     return ellipse;
@@ -80,42 +78,53 @@ void DrawGroupBoxEllipse(HWND hwnd, HINSTANCE hInstance)
         hwnd, (HMENU)DGBIndexes + 11, hInstance, NULL);
     OldDGBProcEllipse = (WNDPROC)SetWindowLongPtr(hDGBEllipse, GWLP_WNDPROC, (LONG_PTR)DGBProcEllipse);
     // Size and positioning
-    int boxW = 80, boxH = 20, pad = 5;
-    int x = 30, y = 30;
+    // int boxW = 80, boxH = 20, pad = 5;
+    // int x = 30, y = 30;
+    int boxW = 60; // edit box width
+    int boxH = 20; // edit box height
+    int labelW = 50;
+    int pad = 6;
+    int x = 10, y = 20; // top-left margin inside the groupbox
+    int xLeft = 10;
+    int xRight = 130; // Left + half width spacing
+    int yLine = y;
+    int lineGap = boxH + pad;
+    
 
-    // --- Row 1 ---
-    CreateWindowEx(0, "STATIC", "XCenter:", WS_CHILD | WS_VISIBLE,
-                   x - 20, y - 2, 60, boxH, hDGBEllipse, NULL, hInstance, NULL);
+    // --- Row 1: XCenter and YCenter ---
+    CreateWindowEx(0, "STATIC", "X:", WS_CHILD | WS_VISIBLE,
+                   xLeft, yLine, labelW, boxH, hDGBEllipse, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x + 50, y, boxW, boxH, hDGBEllipse, (HMENU)(DGBIndexes + 12), hInstance, NULL);
+                   xLeft + labelW, yLine, boxW, boxH, hDGBEllipse, (HMENU)(DGBIndexes + 12), hInstance, NULL);
 
-    CreateWindowEx(0, "STATIC", "YCenter:", WS_CHILD | WS_VISIBLE,
-                   x - 20, y + boxH + pad + 3, 60, boxH, hDGBEllipse, NULL, hInstance, NULL);
+    CreateWindowEx(0, "STATIC", "Y:", WS_CHILD | WS_VISIBLE,
+                   xRight, yLine, labelW, boxH, hDGBEllipse, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x + 50, y + boxH + pad + 3, boxW, boxH, hDGBEllipse, (HMENU)(DGBIndexes + 13), hInstance, NULL);
+                   xRight + labelW, yLine, boxW, boxH, hDGBEllipse, (HMENU)(DGBIndexes + 13), hInstance, NULL);
 
-    // --- Row 2 ---
+    // --- Row 2: A and B ---
+    yLine += lineGap;
     CreateWindowEx(0, "STATIC", "A:", WS_CHILD | WS_VISIBLE,
-                   x - 20, y + boxH + pad + 3 + boxH + pad + 3 - 5 , 60 , boxH , hDGBEllipse , NULL , hInstance , NULL);
-    CreateWindowEx(0 , "EDIT" , "" , WS_CHILD | WS_VISIBLE | WS_BORDER ,
-                   x + 50 , y + boxH + pad + 3 + boxH + pad + 3 - 5 , boxW , boxH , hDGBEllipse , (HMENU)(DGBIndexes + 14) , hInstance , NULL);
+                   xLeft, yLine, labelW, boxH, hDGBEllipse, NULL, hInstance, NULL);
+    CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
+                   xLeft + labelW, yLine, boxW, boxH, hDGBEllipse, (HMENU)(DGBIndexes + 14), hInstance, NULL);
+
     CreateWindowEx(0, "STATIC", "B:", WS_CHILD | WS_VISIBLE,
-                   x - 20, y + boxH + pad + 3 + boxH + pad + 3 + boxH + pad - 5, 60, boxH, hDGBEllipse, NULL, hInstance, NULL);
+                   xRight, yLine, labelW, boxH, hDGBEllipse, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x + 50, y + boxH + pad + 3 + boxH + pad + 3 + boxH + pad - 5, boxW, boxH, hDGBEllipse, (HMENU)(DGBIndexes + 15), hInstance, NULL);
-    CreateWindowEx(0, "STATIC", "Angle:", WS_CHILD | WS_VISIBLE,
-                     x - 20, y + boxH + pad + 3 + boxH + pad + 3 + boxH + pad + boxH + pad - 5, 60, boxH, hDGBEllipse, NULL, hInstance, NULL);
+                   xRight + labelW, yLine, boxW, boxH, hDGBEllipse, (HMENU)(DGBIndexes + 15), hInstance, NULL);
+
+    // --- Row 3: Angle and Color Picker ---
+    yLine += lineGap;
+    CreateWindowEx(0, "STATIC", "Ang:", WS_CHILD | WS_VISIBLE,
+                   xLeft, yLine, labelW, boxH, hDGBEllipse, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                        x + 50, y + boxH + pad + 3 + boxH + pad + 3 + boxH + pad + boxH + pad - 5, boxW, boxH, hDGBEllipse, (HMENU)(DGBIndexes + 16), hInstance, NULL);
-    // CreateWindowEx(0, "STATIC", "Y2:", WS_CHILD | WS_VISIBLE,
-    //                x + boxW + pad - 20, y + boxH + pad + 3, 17, boxH, hDGB, NULL, hInstance, NULL);
-    // CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-    //                x + boxW + pad, y + boxH + pad, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 4), hInstance, NULL);
-    // --- Submit Button ---
+                   xLeft + labelW, yLine, boxW, boxH, hDGBEllipse, (HMENU)(DGBIndexes + 16), hInstance, NULL);
+    
+    yLine += lineGap;
+    CreateWindowEx(0, "BUTTON", "Color Picker", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                   xLeft, yLine, 100, boxH, hDGBEllipse, (HMENU)(1), hInstance, NULL);
+
     CreateWindowEx(0, "BUTTON", "Submit", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                   x + 150, y + 4 * (boxH + pad) - 15, boxW * 2 + pad, boxH,
-                   hDGBEllipse, (HMENU)(DGBIndexes + 17), GetModuleHandle(NULL), NULL);
-    CreateWindowEx(0, "BUTTON", "Color Picker_", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                     x + 130, y - 20, 90, boxH,
-                     hDGBEllipse, (HMENU)(1), GetModuleHandle(NULL), NULL);
+                   xRight, yLine, 100, boxH, hDGBEllipse, (HMENU)(105), hInstance, NULL);
 }

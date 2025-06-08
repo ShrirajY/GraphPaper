@@ -296,34 +296,36 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_CREATE:
     {
-        hRadioBtn1 = CreateWindow("BUTTON", "Lines",
-                                  WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-                                  DGroupBoxLeft, DGroupBoxTop - 30, 120, 30, hwnd, (HMENU)1001,
-                                  (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+        // Create a ComboBox (dropdown)
+        HWND hComboBox = CreateWindow("COMBOBOX", NULL,
+                                      WS_VISIBLE | WS_CHILD | CBS_DROPDOWNLIST,
+                                      DGroupBoxLeft, DGroupBoxTop - 30, 260, 100, hwnd, (HMENU)2001,
+                                      (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
 
-        hRadioBtn2 = CreateWindow("BUTTON", "Circle",
-                                  WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-                                  DGroupBoxLeft + 130, DGroupBoxTop - 30, 120, 30, hwnd, (HMENU)1002,
-                                  (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
-        hRadioBtn3 = CreateWindow("BUTTON", "Ellipse",
-                                  WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-                                    DGroupBoxLeft + 260, DGroupBoxTop - 30, 120, 30, hwnd, (HMENU)1003,
-                                    (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
-        CheckRadioButton(hwnd, 1001, 1003, 1003);
+        // Add items to the ComboBox
+        SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM) "Lines");
+        SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM) "Circle");
+        SendMessage(hComboBox, CB_ADDSTRING, 0, (LPARAM) "Ellipse");
+
+        // Set default selected item (0 = "Lines", 1 = "Circle", 2 = "Ellipse")
+        SendMessage(hComboBox, CB_SETCURSEL, 2, 0); // Select "Ellipse" as default
+
         AddLine(calcDataLine(2, 2, 4, 4, RGB(255, 0, 0)));
         showGroupBox(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
         DrawGroupBoxLine(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
         DrawGroupBoxCircle(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
         DrawGroupBoxEllipse(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
-        hRadioBtn1DBLine = CreateWindow("BUTTON", "Lines",
-                                       WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-                                       LineDBBLeft, LineDBBTop - 30, 120, 30, hwnd, (HMENU)1010,
-                                       (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
-        hRadioBtn2DBCircle = CreateWindow("BUTTON", "Circle",
-                                       WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-                                        LineDBBLeft + 130, LineDBBTop - 30, 120, 30, hwnd, (HMENU)1011,
-                                        (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
-        CheckRadioButton(hwnd, 1010, 1011, 1010);
+        HWND hComboBoxDBMode = CreateWindow("COMBOBOX", NULL,
+                                            WS_VISIBLE | WS_CHILD | CBS_DROPDOWNLIST,
+                                            LineDBBLeft, LineDBBTop - 30, 260, 100, hwnd, (HMENU)2010,
+                                            (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+
+        // Add items
+        SendMessage(hComboBoxDBMode, CB_ADDSTRING, 0, (LPARAM) "Lines");
+        SendMessage(hComboBoxDBMode, CB_ADDSTRING, 0, (LPARAM) "Circle");
+
+        // Set default selection to "Lines"
+        SendMessage(hComboBoxDBMode, CB_SETCURSEL, 0, 0);
         ShowLineDB(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
         ShowCircleDB(hwnd, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
         hMain = hwnd;
@@ -438,7 +440,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             hColorPicker = CreateColorPickerWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), 2, hMain);
             SetWindowPos(hColorPicker, HWND_TOPMOST, 0, 0, 0, 0,
-             SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+                         SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         }
         if (wParam == 'Z')
         {
@@ -505,41 +507,52 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
 
         // Handle button click here
-        if (LOWORD(wParam) == 1001) // btn1 clicked
+        if (LOWORD(wParam) == 2001 && HIWORD(wParam) == CBN_SELCHANGE)
         {
-            ShowWindow(hDGB, SW_SHOW);
-            ShowWindow(hDGBCircle, SW_HIDE);
-            ShowWindow(hDGBEllipse, SW_HIDE);
+            int selectedIndex = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+
+            if (selectedIndex == 0) // "Lines" selected
+            {
+                ShowWindow(hDGB, SW_SHOW);
+                ShowWindow(hDGBCircle, SW_HIDE);
+                ShowWindow(hDGBEllipse, SW_HIDE);
+            }
+            else if (selectedIndex == 1) // "Circle" selected
+            {
+                ShowWindow(hDGB, SW_HIDE);
+                ShowWindow(hDGBCircle, SW_SHOW);
+                ShowWindow(hDGBEllipse, SW_HIDE);
+            }
+            else if (selectedIndex == 2) // "Ellipse" selected
+            {
+                ShowWindow(hDGB, SW_HIDE);
+                ShowWindow(hDGBCircle, SW_HIDE);
+                ShowWindow(hDGBEllipse, SW_SHOW);
+            }
         }
-        else if (LOWORD(wParam) == 1002) // btn2 clicked
-        {
-            ShowWindow(hDGB, SW_HIDE);
-            ShowWindow(hDGBEllipse, SW_HIDE);
-            ShowWindow(hDGBCircle, SW_SHOW);
-        }
-        else if (LOWORD(wParam) == 1003) // btn3 clicked
-        {
-            ShowWindow(hDGB, SW_HIDE);
-            ShowWindow(hDGBCircle, SW_HIDE);
-            ShowWindow(hDGBEllipse, SW_SHOW);
-        }
+
         else if (LOWORD(wParam) == 1004) // Color picker button clicked
         {
             hColorPicker = CreateColorPickerWindow((HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), 0, hMain);
             SetWindowPos(hColorPicker, HWND_TOPMOST, 0, 0, 0, 0,
-             SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+                         SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         }
-        else if (LOWORD(wParam) == 1010) // Line DB button clicked
+        if (LOWORD(wParam) == 2010 && HIWORD(wParam) == CBN_SELCHANGE)
         {
-            ShowWindow(hLineDBGB, SW_SHOW);
-            ShowWindow(hCircleDBGB, SW_HIDE);
-            CheckRadioButton(hwnd, 1010, 1011, 1010);
-        }
-        else if (LOWORD(wParam) == 1004) // Circle DB button clicked
-        {
-            ShowWindow(hLineDBGB, SW_HIDE);
-            ShowWindow(hCircleDBGB, SW_SHOW);
-            CheckRadioButton(hwnd, 1011, 1010, 1011);
+            int selectedIndex = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+
+            if (selectedIndex == 0) // "Lines" selected
+            {
+                // Handle Lines view logic
+                ShowWindow(hLineDBGB, SW_SHOW);
+                ShowWindow(hCircleDBGB, SW_HIDE);
+            }
+            else if (selectedIndex == 1) // "Circle" selected
+            {
+                // Handle Circle view logic
+                ShowWindow(hLineDBGB, SW_HIDE);
+                ShowWindow(hCircleDBGB, SW_SHOW);
+            }
         }
         break;
     }

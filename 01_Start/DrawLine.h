@@ -69,39 +69,40 @@ void DrawGroupBoxLine(HWND hwnd, HINSTANCE hInstance)
         hwnd, (HMENU)DGBIndexes + 0, hInstance, NULL);
     OldDGBProc = (WNDPROC)SetWindowLongPtr(hDGB, GWLP_WNDPROC, (LONG_PTR)DGBProc);
     // Size and positioning
-    int boxW = 80, boxH = 20, pad = 30;
-    int x = 30, y = 40;
+    int boxW = 60, boxH = 20, pad = 10;
+    int labelW = 25;
+    int xLeft = 10, xRight = 125;
+    int y = 30; // start from top margin
 
-    CreateWindowEx(0, "BUTTON", "Color Picker_", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                   x + 130, y - 30, 90, boxH,
-                   hDGB, (HMENU)(1), GetModuleHandle(NULL), NULL);
-
-    // --- Row 1 ---
     CreateWindowEx(0, "STATIC", "X1:", WS_CHILD | WS_VISIBLE,
-                   x - 20, y + 3, 17, boxH, hDGB, NULL, hInstance, NULL);
+                   xLeft, y, labelW, boxH, hDGB, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x, y, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 1), hInstance, NULL);
+                   xLeft + labelW, y, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 1), hInstance, NULL);
 
     CreateWindowEx(0, "STATIC", "Y1:", WS_CHILD | WS_VISIBLE,
-                   x + boxW + pad - 20, y + 3, 17, boxH, hDGB, NULL, hInstance, NULL);
+                   xRight, y, labelW, boxH, hDGB, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x + boxW + pad, y, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 2), hInstance, NULL);
+                   xRight + labelW, y, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 2), hInstance, NULL);
 
-    // --- Row 2 ---
+    // --- Row 2: X2 / Y2 ---
+    y += boxH + pad;
     CreateWindowEx(0, "STATIC", "X2:", WS_CHILD | WS_VISIBLE,
-                   x - 20, y + boxH + pad + 3, 17, boxH, hDGB, NULL, hInstance, NULL);
+                   xLeft, y, labelW, boxH, hDGB, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x, y + boxH + pad, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 3), hInstance, NULL);
+                   xLeft + labelW, y, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 3), hInstance, NULL);
 
     CreateWindowEx(0, "STATIC", "Y2:", WS_CHILD | WS_VISIBLE,
-                   x + boxW + pad - 20, y + boxH + pad + 3, 17, boxH, hDGB, NULL, hInstance, NULL);
+                   xRight, y, labelW, boxH, hDGB, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x + boxW + pad, y + boxH + pad, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 4), hInstance, NULL);
+                   xRight + labelW, y, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 4), hInstance, NULL);
 
-    // --- Submit Button ---
+    // --- Row 3: Buttons ---
+    y += boxH + pad;
+    CreateWindowEx(0, "BUTTON", "Color Picker", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                   xLeft + 10, y, 100, boxH, hDGB, (HMENU)(1), hInstance, NULL);
+
     CreateWindowEx(0, "BUTTON", "Submit", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                   x, y + 2 * (boxH + pad) - 15, boxW * 2 + pad, boxH,
-                   hDGB, (HMENU)105, GetModuleHandle(NULL), NULL);
+                   xRight + 10, y, 100, boxH, hDGB, (HMENU)(105), hInstance, NULL);
 }
 
 LineInfo *CollectLine(HWND hwndGroupBox)
@@ -173,34 +174,36 @@ void DrawGroupBoxCircle(HWND hwnd, HINSTANCE hInstance)
     int boxW = 80, boxH = 20, pad = 5;
     int x = 30, y = 30;
 
-    // --- Row 1 ---
+    // --- Row 1: XCenter ---
     CreateWindowEx(0, "STATIC", "XCenter:", WS_CHILD | WS_VISIBLE,
                    x - 20, y - 2, 60, boxH, hDGBCircle, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
                    x + 50, y, boxW, boxH, hDGBCircle, (HMENU)(DGBIndexes + 7), hInstance, NULL);
 
+    // --- Row 2: YCenter ---
+    y += boxH + pad + 3;
     CreateWindowEx(0, "STATIC", "YCenter:", WS_CHILD | WS_VISIBLE,
-                   x - 20, y + boxH + pad + 3, 60, boxH, hDGBCircle, NULL, hInstance, NULL);
+                   x - 20, y - 2, 60, boxH, hDGBCircle, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x + 50, y + boxH + pad + 3, boxW, boxH, hDGBCircle, (HMENU)(DGBIndexes + 8), hInstance, NULL);
+                   x + 50, y, boxW, boxH, hDGBCircle, (HMENU)(DGBIndexes + 8), hInstance, NULL);
 
-    // --- Row 2 ---
+    // --- Row 3: Radius ---
+    y += boxH + pad + 3;
     CreateWindowEx(0, "STATIC", "Radius:", WS_CHILD | WS_VISIBLE,
-                   x - 20, y + boxH + pad + 3 + boxH + pad + 3, 60, boxH, hDGBCircle, NULL, hInstance, NULL);
+                   x - 20, y - 2, 60, boxH, hDGBCircle, NULL, hInstance, NULL);
     CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-                   x + 50, y + boxH + pad + 3 + boxH + pad + 3, boxW, boxH, hDGBCircle, (HMENU)(DGBIndexes + 9), hInstance, NULL);
+                   x + 50, y, boxW, boxH, hDGBCircle, (HMENU)(DGBIndexes + 9), hInstance, NULL);
 
-    // CreateWindowEx(0, "STATIC", "Y2:", WS_CHILD | WS_VISIBLE,
-    //                x + boxW + pad - 20, y + boxH + pad + 3, 17, boxH, hDGB, NULL, hInstance, NULL);
-    // CreateWindowEx(0, "EDIT", "", WS_CHILD | WS_VISIBLE | WS_BORDER,
-    //                x + boxW + pad, y + boxH + pad, boxW, boxH, hDGB, (HMENU)(DGBIndexes + 4), hInstance, NULL);
+    // --- Row 4: Color Picker & Submit on the same line ---
+    y += boxH + pad + 5;
+    int btnW = 90;
+    int btnSpacing = 15;
 
-    // // --- Submit Button ---
-    CreateWindowEx(0, "BUTTON", "Submit", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                   x, y + 3 * (boxH + pad) + 9, boxW * 2 + pad, boxH,
-                   hDGBCircle, (HMENU)(DGBIndexes + 10), GetModuleHandle(NULL), NULL);
-
-    CreateWindowEx(0, "BUTTON", "Color Picker_", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                   x + 130, y - 20, 90, boxH,
+    CreateWindowEx(0, "BUTTON", "Color Picker", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                   x, y, btnW, boxH,
                    hDGBCircle, (HMENU)(1), GetModuleHandle(NULL), NULL);
+
+    CreateWindowEx(0, "BUTTON", "Submit", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                   x + btnW + btnSpacing, y, btnW, boxH,
+                   hDGBCircle, (HMENU)(DGBIndexes + 10), GetModuleHandle(NULL), NULL);
 }
